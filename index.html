@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Hicham Ouabella | Offensive Security">
+    <title>
+        NAAR | Digital Archive
+    </title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Generated CSS -->
+    <link href="./style.css" rel="stylesheet">
+
+    <!-- Code Highlight CSS (if needed) -->
+    
+</head>
+
+<body class="font-sans antialiased selection:bg-lavender selection:text-breach">
+
+    <!-- FX Layers -->
+    
+            <div class="scanlines"></div>
+            <div class="vignette"></div>
+
+            <!-- Navigation -->
+            <nav class="fixed top-0 w-full z-40 bg-breach/90 backdrop-blur-sm border-b border-white/10 transition-all duration-300"
+                id="navbar">
+                <div
+                    class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+
+                    
+                        <a href="#home"
+                            class="font-display font-bold text-xl tracking-widest cursor-pointer hover:text-lavender transition-colors">
+                            NAAR<span class="text-lavender">.</span>
+                        </a>
+                        <div class="hidden md:flex space-x-8 font-mono text-sm text-gray-400">
+                            <a href="#home" class="hover:text-white transition-colors nav-link active-link"
+                                data-section="home">~/home</a>
+                            <a href="#about" class="hover:text-white transition-colors nav-link"
+                                data-section="about">~/whoami</a>
+                            <a href="#projects" class="hover:text-white transition-colors nav-link"
+                                data-section="projects">~/projects</a>
+                            <a href="#blog" class="hover:text-white transition-colors nav-link"
+                                data-section="blog">~/blog</a>
+                            <a href="#contact" class="hover:text-white transition-colors nav-link"
+                                data-section="contact">~/contact</a>
+                        </div>
+                        <!-- Mobile Menu Button -->
+                        <button class="md:hidden text-white font-mono" onclick="toggleMobileMenu()">[MENU]</button>
+                        
+                </div>
+
+                
+                    <!-- Mobile Menu Dropdown -->
+                    <div id="mobile-menu"
+                        class="hidden md:hidden bg-cyber border-b border-white/10 p-4 font-mono text-sm absolute w-full top-full left-0">
+                        <a href="#home" onclick="toggleMobileMenu()"
+                            class="block w-full text-left py-2 hover:text-lavender">~/home</a>
+                        <a href="#about" onclick="toggleMobileMenu()"
+                            class="block w-full text-left py-2 hover:text-lavender">~/whoami</a>
+                        <a href="#projects" onclick="toggleMobileMenu()"
+                            class="block w-full text-left py-2 hover:text-lavender">~/projects</a>
+                        <a href="#blog" onclick="toggleMobileMenu()"
+                            class="block w-full text-left py-2 hover:text-lavender">~/blog</a>
+                        <a href="#contact" onclick="toggleMobileMenu()"
+                            class="block w-full text-left py-2 hover:text-lavender">~/contact</a>
+                    </div>
+                    
+            </nav>
+
+            <!-- Main Content Injection -->
+            <style>
+@keyframes textGlitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 2px) }
+  40% { transform: translate(-2px, -2px) }
+  60% { transform: translate(2px, 2px) }
+  80% { transform: translate(2px, -2px) }
+  100% { transform: translate(0) }
+}
+.glitch-active {
+  animation: textGlitch 0.15s cubic-bezier(.25, .46, .45, .94) both infinite;
+  opacity: 0.7;
+  filter: contrast(1.5) grayscale(1);
+}
+</style>
+
+<main id="main-content" class="w-full min-h-screen bg-black text-white px-6 py-20 font-mono flex flex-col items-center transition-all">
+    
+    <!-- HOME SECTION -->
+    <section id="section-home" class="nav-section w-full max-w-2xl mx-auto space-y-20 block">
+        <header class="w-full text-center">
+            <p class="text-gray-300 text-lg leading-relaxed lowercase">
+                here you gonna find all the writeups, summaries about concepts and vulnerabilities and personal projects i create . i hope you find it helpfull for you
+            </p>
+        </header>
+        <div class="text-center">
+            <p class="text-gray-500 text-sm">use the navigation bar to access different modules.</p>
+        </div>
+    </section>
+
+    <!-- WHOAMI SECTION -->
+    <section id="section-about" class="nav-section w-full max-w-2xl mx-auto hidden">
+        <h2 class="text-xl text-white border-b border-gray-800 pb-2 mb-6 lowercase">
+            whoami
+        </h2>
+        <p class="text-gray-300 text-lg leading-relaxed lowercase">
+            hicham ouabella AKA naar , student at 42-network school / 1337 khouribga i code in c/c++ , i like cybersecurity [breaking things after understanding it HIHI] as i said here is the place where you gonna find all the things that we understand and break , that's it
+        </p>
+    </section>
+
+    <!-- WRITERUPS / BLOG SECTION -->
+    <section id="section-blog" class="nav-section w-full max-w-2xl mx-auto hidden">
+        <h2 class="text-xl text-white border-b border-gray-800 pb-2 mb-6 lowercase">
+            blogs / writeups
+        </h2>
+        
+        <ul class="space-y-4">
+            
+                <li class="text-gray-500 text-sm">no writeups yet.</li>
+            
+            
+            
+        </ul>
+    </section>
+
+    <!-- PROJECTS SECTION -->
+    <section id="section-projects" class="nav-section w-full max-w-2xl mx-auto hidden">
+        <h2 class="text-xl text-white border-b border-gray-800 pb-2 mb-6 lowercase">
+            projects
+        </h2>
+        
+        <ul class="space-y-6">
+            
+            
+            
+                <li>
+                    <a href="/projects/minishell.html" class="group block no-underline">
+                        <h3 class="text-gray-300 group-hover:text-white group-hover:underline transition-colors mb-1 text-base font-normal">
+                            Minishell:test
+                        </h3>
+                        <p class="text-gray-500 text-sm">
+                            As beautiful as a shell can be.
+                        </p>
+                    </a>
+                </li>
+            
+        </ul>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="section-contact" class="nav-section w-full max-w-2xl mx-auto hidden">
+        <h2 class="text-xl text-white border-b border-gray-800 pb-2 mb-6 lowercase">
+            contact
+        </h2>
+        <ul class="space-y-6 text-gray-300 lowercase text-base">
+            <li>
+                <span class="text-gray-500 block text-xs mb-1">email:</span>
+                <a href="mailto:ouabe2002hisham@proton.me" class="hover:text-white hover:underline transition-colors block">ouabe2002hisham@proton.me</a>
+            </li>
+            <li>
+                <span class="text-gray-500 block text-xs mb-1">github:</span>
+                <a href="https://github.com/hichamouabe" target="_blank" class="hover:text-white hover:underline transition-colors block">github.com/hichamouabe</a>
+            </li>
+            <li>
+                <span class="text-gray-500 block text-xs mb-1">linkedin:</span>
+                <a href="https://www.linkedin.com/in/hicham-ouabella-11bb64206/" target="_blank" class="hover:text-white hover:underline transition-colors block">linkedin.com/in/hicham-ouabella-11bb64206/</a>
+            </li>
+        </ul>
+    </section>
+
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sections = document.querySelectorAll('.nav-section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const mainContent = document.getElementById('main-content');
+        
+        function showSection(id) {
+            // Add glitch effect container
+            mainContent.classList.add('glitch-active');
+            
+            setTimeout(() => {
+                // Switch contents halfway through glitch
+                sections.forEach(sec => {
+                    sec.classList.add('hidden');
+                    sec.classList.remove('block');
+                });
+                
+                const target = document.getElementById('section-' + id);
+                if (target) {
+                    target.classList.remove('hidden');
+                    target.classList.add('block');
+                }
+
+                setTimeout(() => {
+                    // Remove glitch effect
+                    mainContent.classList.remove('glitch-active');
+                }, 150); 
+            }, 100); 
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                const targetId = link.getAttribute('data-section');
+                
+                // Don't glitch if already on the same section
+                const targetEl = document.getElementById('section-' + targetId);
+                if (targetEl && targetEl.classList.contains('block')) return;
+
+                // Update active link styling
+                navLinks.forEach(l => {
+                    l.classList.remove('text-white');
+                    l.classList.add('text-gray-400');
+                });
+                link.classList.remove('text-gray-400');
+                link.classList.add('text-white');
+
+                showSection(targetId);
+                
+                // Update URL hash without jumping
+                window.history.pushState(null, null, '#' + targetId);
+                
+                // Close mobile menu if open
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Handle initial load based on URL hash
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            const link = document.querySelector(`.nav-link[data-section="${hash}"]`);
+            if (link) {
+                // Manually trigger visual state update without clicking
+                navLinks.forEach(l => {
+                    l.classList.remove('text-white');
+                    l.classList.add('text-gray-400');
+                });
+                link.classList.remove('text-gray-400');
+                link.classList.add('text-white');
+                
+                sections.forEach(sec => {
+                    sec.classList.add('hidden');
+                    sec.classList.remove('block');
+                });
+                const target = document.getElementById('section-' + hash);
+                if (target) {
+                    target.classList.remove('hidden');
+                    target.classList.add('block');
+                }
+            }
+        }
+    });
+</script>
+
+                <!-- Footer -->
+                <footer
+                    class="w-full py-4 bg-black/80 text-center text-[10px] font-mono text-gray-600 border-t border-white/5">
+                    
+                        <span class="hidden md:inline">SYSTEM: ONLINE | SECURE CONNECTION ESTABLISHED | </span>
+                        
+                            &copy; 2024 NAAR ARCHIVE
+                            
+                </footer>
+
+                <!-- Scripts -->
+                <script>
+                    // Mobile Menu Toggle
+                    function toggleMobileMenu() {
+                        const menu = document.getElementById('mobile-menu');
+                        if (menu) menu.classList.toggle('hidden');
+                    }
+
+                    // Copy Code Function
+                    function copyCode(btn) {
+                        const codeBlock = btn.nextElementSibling.innerText;
+                        navigator.clipboard.writeText(codeBlock).then(() => {
+                            const originalText = btn.innerText;
+                            btn.innerText = "[COPIED]";
+                            setTimeout(() => {
+                                btn.innerText = originalText;
+                            }, 2000);
+                        });
+                    }
+
+        // Progress Bar Logic
+        
+
+        // SPA logic is handled in index.ejs directly.
+                </script>
+</body>
+
+</html>
