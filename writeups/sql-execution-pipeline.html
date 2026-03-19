@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="How database engines actually process SQL queries and why SQL injections work at the execution level.">
+    <title>
+        SQL Injection: The Real Execution Pipeline | NAAR
+    </title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Generated CSS -->
+    <link href="../style.css" rel="stylesheet">
+
+    <!-- Code Highlight CSS (if needed) -->
+
+    <!-- We use our own CSS for highlights, but could link a theme here if desired -->
+
+</head>
+
+<body class="font-sans antialiased selection:bg-lavender selection:text-breach">
+
+    <!-- FX Layers -->
+
+    <div id="progress-bar"></div>
+
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-40 bg-breach/90 backdrop-blur-sm border-b border-white/10 transition-all duration-300"
+        id="navbar">
+        <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+
+
+            <!-- Detailed Page Nav -->
+            <a href="/index.html"
+                class="font-display font-bold text-lg tracking-widest hover:text-lavender transition-colors group">
+                <span class="text-lavender group-hover:text-white">&lt;</span> NAAR<span
+                    class="text-lavender">.</span>ARCHIVE
+            </a>
+
+            <div class="font-mono text-xs text-gray-500 hidden md:block">
+
+                <a href="/index.html#blog" class="hover:text-white transition-colors">~/war_room</a> / <span
+                    class="text-lavender">current_buffer</span>
+
+            </div>
+
+        </div>
+
+
+    </nav>
+
+    <!-- Main Content Injection -->
+    <main class="relative z-10 pt-32 pb-24 px-6 min-h-screen">
+
+        <article class="max-w-3xl mx-auto">
+
+            <!-- Optional Banner -->
+
+            <div class="mb-12 rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-purple-900/20">
+                <img src="../images/banners/article1_preview.png" alt="Post Banner"
+                    class="w-full h-48 md:h-80 object-cover transform hover:scale-105 transition-transform duration-700">
+            </div>
+
+
+            <!-- Article Header -->
+            <header class="mb-16 text-center md:text-left border-b border-white/10 pb-12">
+                <div class="flex gap-3 justify-center md:justify-start mb-6 font-mono text-xs">
+
+                    <span class="bg-white/10 text-lavender px-2 py-1 rounded">
+                        SQLI
+                    </span>
+
+                    <span class="bg-white/10 text-lavender px-2 py-1 rounded">
+                        Database
+                    </span>
+
+                    <span class="bg-white/10 text-lavender px-2 py-1 rounded">
+                        Hacking
+                    </span>
+
+                    <span class="bg-white/10 text-lavender px-2 py-1 rounded">
+                        Cybersecurity
+                    </span>
+
+                </div>
+
+                <h1 class="text-4xl md:text-5xl font-display font-bold text-white mb-6 leading-tight">
+                    SQL Injection: <span class="text-lavender"> The Real Execution Pipeline</span>
+                </h1>
+
+                <div class="flex items-center justify-center md:justify-start gap-6 font-mono text-sm text-gray-500">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        <time>
+                            2026-03-19
+                        </time>
+                    </div>
+                    <!-- Optional: Read time calculation could be added here if passed from build script -->
+                    <div class="flex items-center gap-2 text-lavender">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span>
+                            H. Ouabella
+                        </span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Markdown Content Body -->
+            <div class="prose prose-invert prose-lg max-w-none font-light leading-relaxed text-gray-300">
+                <h1>Why you need this</h1>
+                <p>Most SQL injection tutorials start at the exploit. Like they always start by the famous payload
+                    <code>&#39; OR 1=1 #</code> without knowing what’s actually happened there. So like that you find
+                    yourself almost memorizing the payloads (if you test those bunch of payloads and no sqli found then
+                    it’s not there).</p>
+                <p>That happens because you learned the surface without the substrate.</p>
+                <p>So .. ! This article fixes that. We are going to walk through HOW THE DATABASE ENGINE ACTUALLY
+                    PROCESSES A SQL QUERY from the moment your string arrives, to the moment rows come back. Every
+                    concept we cover will be tied directly to an attack surface. By the end, you will not just know WHAT
+                    to inject, you will know WHY IT WORKS AT THE EXECUTION LEVEL, which is the difference between a
+                    person who hacks and someone running scripts.</p>
+                <h1>The lie you were taught about sql (or at least you think about sql)</h1>
+                <p>When you first learned SQL, you were implicitly taught that queries execute in the order they are
+                    written;</p>
+                <p>For example when:</p>
+                <p><code>SELECT name, email FROM users WHERE active = 1 ORDER BY name ASC LIMIT 10;</code></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SELECT name, email</th>
+                            <th>1. pick these columns</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>FROM users</td>
+                            <td>2. from this table</td>
+                        </tr>
+                        <tr>
+                            <td>WHERE active = 1</td>
+                            <td>3. filter these rows</td>
+                        </tr>
+                        <tr>
+                            <td>ORDER BY name ASC</td>
+                            <td>4. sort them</td>
+                        </tr>
+                        <tr>
+                            <td>LIMIT 10;</td>
+                            <td>5. take the first 10</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>This mental model is wrong and it matters for SQL injection.</p>
+                <p>The written order is declarative syntax. It is how you describe what you want, but the database
+                    doesn’t execute queries in that order, it has its own internal pipeline.</p>
+                <p>So the 2 orders are fundamentally different.</p>
+                <p>Understanding this difference is not academic, it directly controls:</p>
+                <ul>
+                    <li>WHERE your injection payload lands in the processing pipeline.</li>
+                    <li>WHAT DATA is visible to each clause and therefore what you can extract.</li>
+                    <li>WHY SOME INJECTIONS WORK in <code>WHERE</code> but not in <code>SELECT</code>, or work in
+                        <code>ORDER BY</code> but nowhere else.</li>
+                    <li>WHY some clauses (like HAVING) can be weaponized to leak database schema through aggregate
+                        errors, while injecting the exact same payload into a WHERE clause will just crash.</li>
+                </ul>
+                <h1>The real execution pipeline</h1>
+                <p>Here is the actual logical processing order of a sql select statement. (This is not specific to MySQL
+                    or PostgreSQL, it’s part of the ANSI SQL standard and every major database follows it with some
+                    minor variations in optimization).</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>step 1</th>
+                            <th>FROM / JOIN (allocate buffer in memory and load data into it)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>step 2</td>
+                            <td>WHERE (drops all the rows are not true, filter individual rows)</td>
+                        </tr>
+                        <tr>
+                            <td>step 3</td>
+                            <td>GROUP BY (collapse rows into groups)</td>
+                        </tr>
+                        <tr>
+                            <td>step 4</td>
+                            <td>HAVING (filter groups)</td>
+                        </tr>
+                        <tr>
+                            <td>step 5</td>
+                            <td>SELECT (compute output columns + aliases)</td>
+                        </tr>
+                        <tr>
+                            <td>step 6</td>
+                            <td>DISTINCT (remove duplicate rows)</td>
+                        </tr>
+                        <tr>
+                            <td>step 7</td>
+                            <td>ORDER BY (sort the output)</td>
+                        </tr>
+                        <tr>
+                            <td>step 8</td>
+                            <td>LIMIT / OFFSET (page the output)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h1>The parser: <span class="text-lavender"> how the database reads your input</span></h1>
+                <p>Before any of the execution stages above run, the database has to parse the raw SQL string you sent.
+                    Understanding the parser is critical because SQLI IS FUNDAMENTALLY A PARSING ATTACK. You are not
+                    breaking into the database through a vulnerability in its encryption or whatever else. You&#39;re
+                    just making the parser misidentify the boundary between data and code.</p>
+                <h2>Lexical analysis (Tokenization)</h2>
+                <p>The first thing the parser does is break the raw SQL string into a flat list of tokens. A token is
+                    the smallest meaningful unit of SQL. The lexer reads character by character and classifies
+                    everything it sees:</p>
+                <p><img src="../images/screenshot-2026-03-12_16-24-16.png" alt="Tokenization"></p>
+                <p>If you want to see that in the source code you can see those sources:</p>
+                <ul>
+                    <li><a
+                            href="https://www.postgresql.org/docs/current/parser-stage.html">https://www.postgresql.org/docs/current/parser-stage.html</a>
+                    </li>
+                    <li><a
+                            href="https://www.youtube.com/watch?v=m8PtOY3aWL0">https://www.youtube.com/watch?v=m8PtOY3aWL0</a>
+                    </li>
+                    <li><a
+                            href="https://github.com/postgres/postgres/blob/master/src/backend/parser/scan.l">https://github.com/postgres/postgres/blob/master/src/backend/parser/scan.l</a>
+                    </li>
+                </ul>
+                <p><img src="../images/screenshot-2026-03-12_16-18-57.png" alt="Lexer State Machine"></p>
+                <p>The lexer uses a state machine. At any point, it is in one of several states: reading an identifier,
+                    reading a string literal, reading a number, reading a comment, etc. Each state has rules about what
+                    characters are valid and what state transitions are allowed.</p>
+                <p>The single quote <code>&#39;</code> is the most exploited character in SQLI because it’s a state
+                    transition character for string literals. When the lexer sees <code>&#39;</code>, it transitions
+                    from &quot;reading code&quot; to &quot;reading string literal&quot;. The next <code>&#39;</code>
+                    transition will make the state back. Everything between the quotes is treated as data not code.</p>
+                <p>By passing an unexpected quote, you force the lexer to prematurely exit the &#39;reading string
+                    literal&#39; state and drop back into the &#39;reading code&#39; state. From that exact character
+                    onward, the parser stops treating your input as harmless text and begins tokenizing your payload as
+                    executable database commands:</p>
+                <p><img src="../images/screenshot-2026-03-12_16-38-13.png" alt="Premature Exit"></p>
+                <h2>Syntax analysis (the parser Tree)</h2>
+                <p>After the tokenization, the parser takes the tokens and builds a parse tree (also called an Abstract
+                    syntax tree AST). The AST represents the grammatical structure of the query.</p>
+                <p><img src="../images/screenshot-2026-03-12_16-43-26.png" alt="Parse Tree"></p>
+                <p>The parse tree is what the engine actually works with, not the original string. This is why SQL
+                    keywords are case-insensitive: the lexer normalizes them before they reach the tree.
+                    <code>SELECT</code>, <code>select</code>, and <code>SeLect</code> all produce the same
+                    <code>[KEYWORD:SELECT]</code> token.</p>
+                <h2>Comments as weapons</h2>
+                <p>SQL supports 2 comment syntaxes. Both cause the lexer to discard everything until the end of the
+                    comment, which is one of the most powerful injection tools available beside the normalization phase
+                    that happened in the lexer too. Let’s leave the normalization rabbit hole to other articles 🙂.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Syntax</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>-- </code></td>
+                            <td>single line comment (standard SQL, MySQL, PostgreSQL, MSSQL)</td>
+                        </tr>
+                        <tr>
+                            <td><code>#</code></td>
+                            <td>single line comment (MySQL only)</td>
+                        </tr>
+                        <tr>
+                            <td><code>/* */</code></td>
+                            <td>multi-line comment (all databases)</td>
+                        </tr>
+                        <tr>
+                            <td><code>/*! */</code></td>
+                            <td>MySQL-specific inline comment — executes in MySQL, ignored elsewhere</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>For injection, comments serve 2 primary purposes:</p>
+                <ol>
+                    <li><strong>Termination</strong>: cut off the remainder of the original query after your payload
+                    </li>
+                    <li><strong>Bypass</strong>: split keywords to evade pattern-matching filters</li>
+                </ol>
+                <p><img src="../images/screenshot-2026-03-12_17-32-11.png" alt="Comments as bypass"></p>
+                <h1>The query optimizer: <span class="text-lavender"> What happens before execution</span></h1>
+                <p>The optimizer performs several types of rewrites, to make it better (it’s called the planner too).
+                </p>
+                <p>And the important ones for hackers are:</p>
+                <ol>
+                    <li><strong>Short-circuit evaluation</strong>: is a database optimization trick where the engine
+                        stops reading a query the moment it knows the final True/False outcome. For hackers doing
+                        Time-Based SQLi, this can hide vulnerabilities. If you inject <code>AND sleep(1)</code> on a
+                        condition that evaluates to <code>False</code> (like a wrong username), the database skips your
+                        sleep entirely, giving a <code>0.00s</code> response and making the site look secure. To bypass
+                        this, always test with both <code>AND</code> and <code>OR</code>. If <code>AND</code> gives you
+                        no delay, flip it to <code>OR</code> to force the engine to execute the sleep. Conversely, if
+                        your <code>OR</code> payload causes a massive timeout because the database is executing the
+                        sleep on every single row in the table, simply append <code>LIMIT 1</code> to kill the table
+                        scan and get a clean, reliable delay.</li>
+                </ol>
+                <p><img src="../images/screenshot-2026-03-14_11-36-02.png" alt="Short-circuit evaluation"></p>
+                <p>You can search for those (just for fun):</p>
+                <ol>
+                    <li><strong>Predicate pushdown</strong>: WHERE conditions are pushed as close to the data source as
+                        possible. So a filter on a subquery can get moved inside another subquery, changing where your
+                        injection takes effect.</li>
+                    <li><strong>Constant folding</strong>: Expressions with only constants are pre-evaluated. So
+                        <code>1=1</code> becomes TRUE before the execution.</li>
+                </ol>
+                <h1>How database sees your injected input</h1>
+                <p>This is the core of that vulnerability, as we said SQLI is a parsing attack but the more important
+                    detail is how this database engine sees our input.</p>
+                <h2>String concatenation: <span class="text-lavender"> the root cause</span></h2>
+                <p>SQL injection is only possible when user input is combined with SQL code through string concatenation
+                    before the combined result is sent to the database parser, the parser receives a single string and
+                    has no way to know which part were &#39;code&#39; and which part were &#39;data&#39;.</p>
+                <pre><code class="hljs python">user_input = request.form[<span class="hljs-string">&#x27;username&#x27;</span>]
+<span class="hljs-comment"># THE FATAL FLAW: String Concatenation</span>
+query = <span class="hljs-string">f&quot;SELECT id, dept FROM users WHERE username = &#x27;<span class="hljs-subst">{user_input}</span>&#x27;&quot;</span>
+
+cursor.execute(query)
+
+<span class="hljs-comment"># if the input were &quot;zoublik&quot; then we have a query like :</span>
+<span class="hljs-comment"># SELECT id, dept FROM users WHERE username = &#x27;zoublik&#x27;</span>
+<span class="hljs-comment"># but if the input were &quot;admin&#x27; OR 1=1 -- -&quot; the query will be :</span>
+<span class="hljs-comment"># SELECT id, dept FROM users WHERE username = &#x27;admin&#x27; OR 1=1 -- -&#x27;</span></code></pre>
+                <h2>Parameterized Queries: <span class="text-lavender"> Why They Actually Work</span></h2>
+                <p>Parameterized queries fix the injection not by escaping your input but by sending the code section
+                    and the data through separate channels, the SQL code is parsed first, then the parameter values are
+                    bound after parsing in simple terms (YOUR INJECTED INPUT WILL NEVER BE PARSED).</p>
+                <pre><code class="hljs python">user_input = request.form[<span class="hljs-string">&#x27;username&#x27;</span>]
+<span class="hljs-comment"># the code channel :</span>
+query = <span class="hljs-string">&quot;SELECT id, dept FROM users WHERE username = ?&quot;</span>
+<span class="hljs-comment"># input passed as a parameter</span>
+cursor.execute(query, (user_input,))
+<span class="hljs-comment"># this one will make the attacker injection looks like that :</span>
+<span class="hljs-comment"># SELECT id, dept FROM users WHERE username = &quot;admin&#x27; OR 1=1 -- -&quot;</span>
+<span class="hljs-comment"># [admin&#x27; OR 1=1 -- -] this one will be as one block ( a simple string ). that&#x27;s it</span></code></pre>
+                <p>However, parameterization is not a universal fix. It only protects <em>data values</em>, not
+                    structural identifiers. If an application requires a dynamic query where the planner must build a
+                    completely different execution plan based on the input, parameters physically cannot be used. For
+                    example, you cannot parameterize a table name (<code>SELECT * FROM ?</code>) or a sorting column
+                    (<code>ORDER BY ? DESC</code>). Because the engine must know the exact table and columns to check
+                    permissions and indexes <em>before</em> execution, developers are forced to fall back to vulnerable
+                    string concatenation for features like dynamic column sorting (<code>?sort_by=price</code>) or
+                    dynamic table routing.</p>
+                <h2>Second order injection: <span class="text-lavender"> injection that sleeps (for a while HIHI)</span>
+                </h2>
+                <p>Second order injection (also called stored injection) happens when input is safely stored, but later
+                    retrieved and used unsafely. The injection doesn’t fire on the first request, it fires on a second
+                    request that reads the stored data. For example you can name yourself in a platform some random sql
+                    query and then try to update your password so when the backend tries to:</p>
+                <pre><code class="hljs sql"># username <span class="hljs-keyword">is</span> &quot;admin&#x27; OR 1=1--&quot; stored safely BUT :
+<span class="hljs-keyword">UPDATE</span> users <span class="hljs-keyword">SET</span> pass<span class="hljs-operator">=</span><span class="hljs-string">&#x27;new123&#x27;</span> <span class="hljs-keyword">WHERE</span> username<span class="hljs-operator">=</span><span class="hljs-string">&#x27;admin&#x27;</span> <span class="hljs-keyword">OR</span> <span class="hljs-number">1</span><span class="hljs-operator">=</span><span class="hljs-number">1</span> <span class="hljs-comment">--&#x27;</span></code></pre>
+                <h1>Injection Points Mapped to Execution Stages</h1>
+                <p>When you find an injection point, the clause you land in dictates exactly what tools you can use. You
+                    cannot escape the clause context or its order (you know! stacked queries are not allowed). You have
+                    to play by its pipeline rules. Here is how stages now will make sense.</p>
+                <h2>FROM clause injection point: <span class="text-lavender"></span></h2>
+                <p>This stage allocates the initial data buffer, it controls the literal source of the data before any
+                    filtering happens. Since it’s step 1 you can completely swap the working data set, pointing the
+                    query to <code>information_schema</code> to map the database or switch from low privilege table to a
+                    high privilege one. Or UNION based injection as well 🙂.</p>
+                <p>For example:</p>
+                <pre><code class="hljs sql"># the query <span class="hljs-keyword">is</span> : <span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-string">&#x27;[input]&#x27;</span>
+<span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> information_schema.tables</code></pre>
+                <h2>WHERE clause injection point: <span class="text-lavender"></span></h2>
+                <p>This stage evaluates the working set row by row and drops the false ones, and because it runs at
+                    stage 2 (before the output is generated in stage 5 (<code>SELECT</code>)) you can easily satisfy the
+                    filter and append a <code>UNION SELECT</code> so the engine finishes the WHERE filter, moves down
+                    the pipeline, and cleanly stacks your union data into the final output.</p>
+                <pre><code class="hljs sql"># <span class="hljs-keyword">SELECT</span> dept <span class="hljs-keyword">FROM</span> users <span class="hljs-keyword">WHERE</span> username <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;[INJECT]&#x27;</span>
+<span class="hljs-keyword">SELECT</span> dept <span class="hljs-keyword">FROM</span> users <span class="hljs-keyword">WHERE</span> username <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;admin&#x27;</span> <span class="hljs-keyword">UNION</span> <span class="hljs-keyword">SELECT</span> password <span class="hljs-keyword">FROM</span> users <span class="hljs-comment">--&#x27;</span></code></pre>
+                <h2>HAVING clause injection point: <span class="text-lavender"></span></h2>
+                <p>This stage filters data <em>after</em> it has been grouped together (<code>GROUP BY</code>).
+                    Therefore, all the attacker needs to do is inject a valid boolean expression (using logic,
+                    aggregates, functions, or subqueries) to manipulate which groups are returned or knowing some data
+                    out of that groups scope using some conditional sleeps or even aggregate errors that leak table and
+                    column names [THIS LAST ONE WE WERE TALKING ABOUT MSSQL].</p>
+                <p><img src="../images/screenshot-2026-03-15_00-55-14.png" alt="HAVING clause injection"></p>
+                <h2>ORDER BY clause injection point: <span class="text-lavender"></span></h2>
+                <p>This stage sorts the final output data after it has already been selected (<code>SELECT</code>).
+                    Therefore, all the attacker needs to do is inject a valid sorting expression (using
+                    <code>CASE WHEN</code> logic, subqueries, or functions). You can use this to manipulate how the rows
+                    are ordered on the screen to extract true/false answers, pull out-of-scope data using conditional
+                    sleeps per row, or force function errors that leak hidden data directly into the error log [like
+                    using <code>EXTRACTVALUE()</code> in MySQL].</p>
+                <p><img src="../images/screenshot-2026-03-15_01-07-51.png" alt="ORDER BY clause injection"></p>
+                <p>Honestly, maybe I just overthought this entire thing and I&#39;m just talking BS right now to sound
+                    smart. But at the end of the day, if you know how the engine breathes, you know how to choke it.</p>
+                <p>See you in the next one.</p>
+
+            </div>
+
+        </article>
+
+        <!-- Navigation Buttons -->
+        <div class="max-w-3xl mx-auto mt-16 pt-8 border-t border-white/10 flex justify-between font-mono text-sm">
+
+            <div></div>
+
+
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 bg-black/80 text-center text-[10px] font-mono text-gray-600 border-t border-white/5">
+
+        &copy; 2024 NAAR ARCHIVE
+        | <a href="/index.html" class="hover:text-lavender">RETURN
+            TO ROOT</a>
+
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // Copy Code Function
+        function copyCode(btn) {
+            const codeBlock = btn.nextElementSibling.innerText;
+            navigator.clipboard.writeText(codeBlock).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = "[COPIED]";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                }, 2000);
+            });
+        }
+
+        // Progress Bar Logic
+
+        window.onscroll = function () {
+            var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            var scrolled = (winScroll / height) * 100;
+            var bar = document.getElementById("progress-bar");
+            if (bar) bar.style.width = scrolled + "%";
+        };
+
+
+        // SPA logic is handled in index.ejs directly.
+    </script>
+</body>
+
+</html>
